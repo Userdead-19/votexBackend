@@ -1,25 +1,41 @@
-import express,{Request,Response} from 'express';  
-const dotenv = require('dotenv');
-const cookieParser = require('cookie-parser');
+import express,{Request,Response,NextFunction} from 'express';
+import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import {checkCookie,createCookieData, updateCookie} from './controllers/cookies';
+import mongoose from 'mongoose';
+import morgan from 'morgan';
+import bodyParser from 'body-parser';
+import ElectionRouter from './router/ElectionRouter';
 
 const app = express();
 dotenv.config();
 
-app.use(cookieParser())
+// Middleware setup
 app.use(cors({
-    origin:process.env.FRONTEND_URL,
-    credentials:true
+  origin: process.env.FRONTEND_URL,
+  credentials: true
 }));
+app.use(cookieParser());
+app.use(bodyParser.json());
+app.use(morgan('dev'));
+
+// MongoDB connection
+const mongoURI = process.env.MONGO_URL || '';
+mongoose.connect(mongoURI)
+  .then(() => console.log('Connected to the database'))
+  .catch((err) => console.error('Error connecting to the database:', err));
+
+// Routes
+app.use('/api', ElectionRouter);
 
 
-
-app.get('/',(req:Request,res:Response)=>{
-    res.json('Hello World');
+// Default route
+app.get('/', (req, res) => {
+  res.json('Hello World');
 });
 
-
-app.listen(process.env.PORT,()=>{
-    console.log(`Server is running on port ${process.env.PORT}`);
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

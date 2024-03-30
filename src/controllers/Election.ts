@@ -20,24 +20,20 @@ export const createElectionController = async (req:Request,res:Response) => {
     req.body.ElectionStatus = "Pending";
     req.body.ElectionUrl = generateRandomString(6);
     
-    createElection(req.body).then((data) => {
-        if(data !== undefined){
-            res.status(200).json({"message":"Election created successfully"});
-        }else{
-            res.status(400).json({"message":"Error creating election"});
-        }
-    });
+    createElection(req.body).then((data:any) => {
+        res.status(200).json({"message":"Election created successfully"});
+    }).catch((err) => {
+        res.status(400).json({"message":"Error creating election","error":err});
+    })
 };
 
 export const getElectionController = async (req:Request,res:Response) => {
     const electionUrl = req.params.electionUrl;
     getElection(electionUrl).then((data) => {
-        if(data !== undefined){
-            res.status(200).json(data);
-        }else{
-            res.status(400).json({"message":"Error fetching election"});
-        }
-    });
+        res.status(200).json(data);
+    }).catch((err) => {
+        res.status(400).json({"message":"Error fetching election","error":err});
+    })
 };
 
 export const castVoteController = async (req:Request,res:Response,next:NextFunction) => {
@@ -49,14 +45,14 @@ export const castVoteController = async (req:Request,res:Response,next:NextFunct
 
     for(let i = 0; i < keys.length; i++){
         castVote(req.params.electionUrl, keys[i].toString(), values[i]).then((data) => {
-            if(data === undefined){
-                res.status(400).json({"message":"Error casting vote"});
-            }
+           
+        }).catch((err) => {
+            res.status(400).json({"message":"Error casting vote","error":err});
         })
         addIpandUserAgent(req.ip,req.headers['user-agent'],req.params.electionUrl).then((data) => {
-            if(data === undefined){
-                res.status(400).json({"message":"Error adding ip and user agent"});
-            }
+            
+        }).catch((err) => {
+            res.status(400).json({"message":"Error adding ip and user agent","error":err});
         })
     }
     next();
@@ -66,10 +62,8 @@ export const updateElectionStatusController = async (req:Request,res:Response) =
     const electionUrl = req.params.electionUrl;
     const electionStatus = req.body.ElectionStatus;
     updateElectionStatus(electionUrl,electionStatus).then((data) => {
-        if(data !== undefined){
-            res.status(200).json({"message":"Election status updated successfully"});
-        }else{
-            res.status(400).json({"message":"Error updating election status"});
-        }
-    });
+        res.status(200).json({"message":"Election status updated successfully"});
+    }).catch((err) => {
+        res.status(400).json({"message":"Error updating election status","error":err});
+    })
 };

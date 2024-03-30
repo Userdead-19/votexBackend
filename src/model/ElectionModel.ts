@@ -14,8 +14,8 @@ export interface Election extends Document{
     ElectionName:String;
     ElectionUrl:String;
     CategoryAndCandidates:CategoryAndCandidates[];
-    ElectionStartDate:Date;
-    ElectionEndDate:Date;
+    ElectionStartDate:String;
+    ElectionEndDate:String;
     ElectionStatus:String;
     VotersIpAddress?:Array<String>;
     VotersUserAgent?:Array<String>;
@@ -34,11 +34,13 @@ const electionSchema: Schema<Election> = new Schema({
     ElectionName: { type: String, required: true },
     ElectionUrl: { type: String, required: true },
     CategoryAndCandidates: [categoryAndCandidatesSchema],
-    ElectionStartDate: { type: Date, required: true },
-    ElectionEndDate: { type: Date, required: true },
-    ElectionStatus: { type: String, required: true },
+    ElectionStartDate: { type: String, required: true },
+    ElectionEndDate: { type: String, required: true },
+    ElectionStatus: { type: String, default:'pending' },
     VotersIpAddress: { type: [String] }, 
     VotersUserAgent: { type: [String] },
+},{
+    timestamps:true
 });
   
 export const ElectionModel =  mongoose.model<Election>('Election', electionSchema);
