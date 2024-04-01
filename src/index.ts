@@ -11,6 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { exportVotings } from './model/ElectionModel';
 
 dotenv.config();
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
@@ -19,11 +20,14 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
 }));
+
 app.use(cookieParser());
+
 app.use(bodyParser.json());
 app.use(morgan('dev'));
+
 
 io.on('connect', (socket: Socket) => {
   console.log('A user connected');
