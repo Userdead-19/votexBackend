@@ -15,7 +15,10 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  credentials: true,
+}));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(morgan('dev'));
