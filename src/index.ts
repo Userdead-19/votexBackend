@@ -15,10 +15,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3001',
-  credentials: true
-}));
+app.use(cors());
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(morgan('dev'));
