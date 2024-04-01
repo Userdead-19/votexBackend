@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "nodemon --exec ts-node src/index.ts",
-    "build": "tsc && cp src/*.json dist/"
+    "build": "tsc && cp src/*.json dist/ && cp .env dist/ && cp -R src/controllers dist/ && cp -R src/model dist/ && cp -R src/router dist/"
   },
   "keywords": [],
   "author": "",
