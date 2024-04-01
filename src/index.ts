@@ -1,4 +1,4 @@
-import express,{Request,Response,NextFunction} from 'express';
+import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -6,36 +6,61 @@ import mongoose from 'mongoose';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
 import ElectionRouter from './router/ElectionRouter';
+import http from 'http';
+import { Server, Socket } from 'socket.io';
+import { exportVotings } from './model/ElectionModel';
 
-const app = express();
 dotenv.config();
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-// Middleware setup
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: process.env.FRONTEND_URL || 'http://localhost:3001',
   credentials: true
 }));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(morgan('dev'));
 
-// MongoDB connection
+io.on('connect', (socket: Socket) => {
+  console.log('A user connected');
+
+  socket.on('user', (data: any) => {
+    console.log('Received user data:', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
+
 const mongoURI = process.env.MONGO_URL || '';
 mongoose.connect(mongoURI)
   .then(() => console.log('Connected to the database'))
   .catch((err) => console.error('Error connecting to the database:', err));
 
-// Routes
 app.use('/api', ElectionRouter);
 
+app.get('/socket', (req: Request, res: Response) => {
+  res.json('Hello World');
+  io.emit('message', 'hello world');
+});
 
-// Default route
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.json('Hello World');
 });
 
-// Start the server
+export const updateResultVote = async (ElectionURl: string) => {
+  try {
+    const data = await exportVotings(ElectionURl);
+    io.emit(`result/${ElectionURl}`, data);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
