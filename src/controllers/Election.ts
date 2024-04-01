@@ -1,4 +1,4 @@
-import { addIpandUserAgent, castVote, createElection, getElection, updateElectionStatus } from '../model/ElectionModel';
+import { Election, addIpandUserAgent, castVote, createElection, getElection, updateElectionStatus } from '../model/ElectionModel';
 import { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
 
@@ -28,11 +28,12 @@ export const createElectionController = async (req: Request, res: Response) => {
 
 export const getElectionController = async (req: Request, res: Response) => {
     const electionUrl = req.params.electionUrl;
-    getElection(electionUrl).then((data) => {
+    const data: any = await getElection(electionUrl);
+    if (data) {
         res.status(200).json(data);
-    }).catch((err) => {
-        res.status(400).json({ "message": "Error fetching election", "error": err });
-    })
+    } else {
+        res.status(400).json({ "message": "Error getting election" });
+    }
 };
 
 export const castVoteController = async (req: Request, res: Response, next: NextFunction) => {

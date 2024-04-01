@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface Candidates {
   CandidateName: String;
+  CandidateIdno: String;
   CandidateVotes: number;
 }
 
@@ -15,6 +16,7 @@ export interface Election extends Document {
   ElectionUrl: String;
   CategoryAndCandidates: CategoryAndCandidates[];
   MaxVotes: Number;
+  NoOfVotes: number;
   ElectionStartDate: String;
   ElectionEndDate: String;
   ElectionStatus: String;
@@ -23,6 +25,7 @@ export interface Election extends Document {
 }
 const candidateSchema: Schema<Candidates> = new Schema({
   CandidateName: { type: String, required: true },
+  CandidateIdno: { type: String, required: true },
   CandidateVotes: { type: Number, default: 0 },
 });
 
@@ -36,6 +39,7 @@ const electionSchema: Schema<Election> = new Schema({
   ElectionUrl: { type: String, required: true },
   CategoryAndCandidates: [categoryAndCandidatesSchema],
   MaxVotes: { type: Number, required: true },
+  NoOfVotes: { type: Number, default: 0 },
   ElectionStartDate: { type: String, required: true },
   ElectionEndDate: { type: String, required: true },
   ElectionStatus: { type: String, default: 'pending' },
@@ -49,7 +53,15 @@ export const ElectionModel = mongoose.model<Election>('Election', electionSchema
 
 export const createElection = async (electionData: Election) => { ElectionModel.create(electionData).then((data) => { return true }).catch((err) => { console.log(err); return false }); };
 
-export const getElection = async (electionUrl: String) => { ElectionModel.findOne({ ElectionUrl: electionUrl }).then((data) => { return data }).catch((err) => { console.log(err); return false }); };
+export const getElection = async (electionUrl: String) => {
+  try {
+    const data = await ElectionModel.findOne({ ElectionUrl: electionUrl })
+    return data;
+  } catch (error) {
+    console.log(error)
+  }
+
+}
 
 export const getAllElections = async () => { ElectionModel.find().then((data) => { return data }).catch((err) => { console.log(err); return false }); };
 
@@ -83,6 +95,7 @@ export const addIpandUserAgent = async (ip: string | undefined, userAgent: strin
 
     const data: Election | null = await ElectionModel.findOne({ ElectionUrl: electionUrl });
 
+
     if (data !== null) {
       if (ip !== undefined) {
         if (data.VotersIpAddress === null || data.VotersIpAddress === undefined) {
@@ -97,7 +110,7 @@ export const addIpandUserAgent = async (ip: string | undefined, userAgent: strin
         }
         data.VotersUserAgent.push(userAgent);
       }
-
+      data.NoOfVotes += 1;
       await data.save();
 
       return true;
