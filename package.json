@@ -7,7 +7,6 @@
     "node": "20.x"
   },
   "scripts": {
-    "start": "node dist/index.js",
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc && cp *.json dist/ && cp .env dist/ && cp -R src/controllers dist/ && cp -R src/model dist/ && cp -R src/router dist/"
   },
