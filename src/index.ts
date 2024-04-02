@@ -64,7 +64,7 @@ app.get('/socket', (req: Request, res: Response) => {
 });
 
 app.get("/clientIP", (req: Request, res: Response) => {
-  res.json(`Your IP address is ${req.ip}`);
+  res.json(`Your IP address is ${req.headers['x-forwarded-for'] || req.socket.remoteAddress}`);
 })
 
 app.get('/', (req: Request, res: Response) => {
