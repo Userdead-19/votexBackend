@@ -65,21 +65,27 @@ export const getElection = async (electionUrl: String) => {
 
 export const getAllElections = async () => { ElectionModel.find().then((data) => { return data }).catch((err) => { console.log(err); return false }); };
 
-export const castVote = async (electionURL: String, category: String, candidate: String) => {
-  ElectionModel.findOne({ ElectionUrl: electionURL }).then((data) => {
+export const castVote = async (electionURL: string, category: string, candidate: string) => {
+  try {
+    const data = await ElectionModel.findOne({ ElectionUrl: electionURL });
+
     if (data) {
-      const categoryIndex = data.CategoryAndCandidates.findIndex((categoryAndCandidates) => categoryAndCandidates.CategoryName === category);
+      const categoryIndex = data.CategoryAndCandidates.findIndex(categoryAndCandidates => categoryAndCandidates.CategoryName === category);
       if (categoryIndex !== -1) {
-        const candidateIndex = data.CategoryAndCandidates[categoryIndex].Candidates.findIndex((candidateData) => candidateData.CandidateName === candidate);
+        const candidateIndex = data.CategoryAndCandidates[categoryIndex].Candidates.findIndex(candidateData => candidateData.CandidateName === candidate);
         if (candidateIndex !== -1) {
           data.CategoryAndCandidates[categoryIndex].Candidates[candidateIndex].CandidateVotes += 1;
-
-          data.save().then((data) => { return true }).catch((err) => { console.log(err); return false });
+          await data.save();
+          return true;
         }
       }
-    } else { return false; }
-  }).catch((err) => { console.log(err); return false });
-}
+    }
+    return false;
+  } catch (err) {
+    console.error('Error casting vote:', err);
+    return false;
+  }
+};
 
 export const updateElectionStatus = async (electionUrl: String, status: String) => {
   ElectionModel.findOne({ ElectionUrl: electionUrl }).then((data) => {
@@ -92,27 +98,24 @@ export const updateElectionStatus = async (electionUrl: String, status: String) 
 
 export const addIpandUserAgent = async (ip: string | undefined, userAgent: string | undefined, electionUrl: string): Promise<boolean> => {
   try {
+    const data = await ElectionModel.findOne({ ElectionUrl: electionUrl });
 
-    const data: Election | null = await ElectionModel.findOne({ ElectionUrl: electionUrl });
-
-
-    if (data !== null) {
+    if (data) {
       if (ip !== undefined) {
-        if (data.VotersIpAddress === null || data.VotersIpAddress === undefined) {
+        if (!data.VotersIpAddress) {
           data.VotersIpAddress = [];
         }
         data.VotersIpAddress.push(ip);
       }
 
       if (userAgent !== undefined) {
-        if (data.VotersUserAgent === null || data.VotersUserAgent === undefined) {
+        if (!data.VotersUserAgent) {
           data.VotersUserAgent = [];
         }
         data.VotersUserAgent.push(userAgent);
       }
       data.NoOfVotes += 1;
       await data.save();
-
       return true;
     } else {
       return false;

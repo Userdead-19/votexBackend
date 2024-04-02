@@ -21,8 +21,11 @@ export const createCookieData = async (req: Request, res: Response, next: NextFu
       return res.status(400).json({ message: 'You have already voted' });
     }
 
+    const clientIP: any = req.headers['x-forwarded-for'];
+
+    const parsedClientIP: string = clientIP.split(',')[0];
     const cookieData = {
-      IPaddress: req.ip,
+      IPaddress: parsedClientIP,
       UserAgent: req.headers['user-agent'],
       voted: false
     };

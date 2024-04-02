@@ -38,18 +38,18 @@ export const getElectionController = async (req: Request, res: Response) => {
 
 export const castVoteController = async (req: Request, res: Response, next: NextFunction) => {
     const keys: String[] = Object.keys(req.body);
-    const values: String[] = Object.values(req.body);
+    const values: any = Object.values(req.body);
     if (keys.length === 0) {
         res.status(400).json({ "message": "Bad Api call" });
     }
 
     for (let i = 0; i < keys.length; i++) {
-        castVote(req.params.electionUrl, keys[i].toString(), values[i]).then((data) => {
+        await castVote(req.params.electionUrl, keys[i].toString(), values[i]).then((data) => {
 
         }).catch((err) => {
             res.status(400).json({ "message": "Error casting vote", "error": err });
         })
-        addIpandUserAgent(req.ip, req.headers['user-agent'], req.params.electionUrl).then((data) => {
+        await addIpandUserAgent(req.ip, req.headers['user-agent'], req.params.electionUrl).then((data) => {
 
         }).catch((err) => {
             res.status(400).json({ "message": "Error adding ip and user agent", "error": err });
