@@ -17,7 +17,14 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 app.use(cors({
-  origin:'http://localhost:3000',
+  origin: function (origin, callback) {
+    const allowedOrigins = ['http://localhost:3000', process.env.FRONTEND_URL as string];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   //methods: ['GET', 'POST', 'PUT', 'DELETE'],
   //allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials', 'Access-Control-Allow-Headers', 'Access-Control-Allow-Methods'],
