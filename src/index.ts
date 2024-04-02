@@ -19,7 +19,7 @@ const io = new Server(server);
 app.use(cors({
   origin:'http://localhost:3000',
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  //methods: ['GET', 'POST', 'PUT', 'DELETE'],
   //allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials', 'Access-Control-Allow-Headers', 'Access-Control-Allow-Methods'],
 }));
 
