@@ -28,7 +28,7 @@ export const createCookieData = async (req: Request, res: Response, next: NextFu
     };
     const hashedCookieData = await jsonwebtoken.sign(cookieData, process.env.COOKIE_SECRET);
 
-    res.cookie('VotingSite', hashedCookieData, { maxAge: 60 * 60 * 24 * 1000, secure: true, httpOnly: true });
+    res.cookie('VotingSite', hashedCookieData, { maxAge: 60 * 60 * 24 * 1000, secure: true, httpOnly: true, sameSite: 'none', path: '/' });
     next();
   } catch (error) {
     console.error('Error creating cookie data:', error);
