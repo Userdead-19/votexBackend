@@ -16,6 +16,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+
+app.set('trust proxy', 1);
+
 app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = ['http://localhost:3000', process.env.FRONTEND_URL as string];
@@ -59,6 +62,10 @@ app.get('/socket', (req: Request, res: Response) => {
   res.json('Hello World');
   io.emit('message', 'hello world');
 });
+
+app.get("/clientIP", (req: Request, res: Response) => {
+  res.json(`Your IP address is ${req.ip}`);
+})
 
 app.get('/', (req: Request, res: Response) => {
   res.json('Hello World');
