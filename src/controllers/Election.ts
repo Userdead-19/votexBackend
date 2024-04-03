@@ -50,10 +50,10 @@ export const castVoteController = async (req: Request, res: Response, next: Next
             res.status(400).json({ "message": "Error casting vote", "error": err });
         })
 
-        // const clientIP: any = req.headers['x-forwarded-for'];
-        // const parsedClientIP: string = clientIP.split(',')[0];
+        const clientIP: any = req.headers['x-forwarded-for'];
+        const parsedClientIP: string = clientIP.split(',')[0];
 
-        await addIpandUserAgent(req.ip, req.headers['user-agent'], req.params.electionUrl).then((data) => {
+        await addIpandUserAgent(parsedClientIP, req.headers['user-agent'], req.params.electionUrl).then((data) => {
 
         }).catch((err) => {
             res.status(400).json({ "message": "Error adding ip and user agent", "error": err });
