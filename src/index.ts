@@ -21,7 +21,7 @@ app.set('trust proxy', 1);
 
 app.use(cors({
   origin: function (origin, callback) {
-    const allowedOrigins = ['http://localhost:3000', process.env.FRONTEND_URL as string];
+    const allowedOrigins = ['http://localhost:3001', process.env.FRONTEND_URL as string];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
