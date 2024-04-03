@@ -15,9 +15,12 @@ export const createCookieData = async (req: Request, res: Response, next: NextFu
     if (!election) {
       return res.status(400).json({ message: 'Election not found' });
     }
-    const clientIp: string | undefined = req.ip;
 
-    if (election?.VotersIpAddress?.includes(clientIp)) {
+    const clientIp: any = req.headers['x-forwarded-for'];
+
+    const parsedClientIP: any = clientIp.split(',')[0]
+
+    if (election?.VotersIpAddress?.includes(parsedClientIP)) {
       return res.status(400).json({ message: 'You have already voted' });
     }
 
@@ -29,9 +32,6 @@ export const createCookieData = async (req: Request, res: Response, next: NextFu
       }
     }
 
-    const clientIP: any = req.headers['x-forwarded-for'];
-
-    const parsedClientIP: string = clientIP.split(',')[0];
     const cookieData = {
       IPaddress: parsedClientIP,
       UserAgent: req.headers['user-agent'],
