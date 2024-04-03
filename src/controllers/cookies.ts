@@ -29,11 +29,11 @@ export const createCookieData = async (req: Request, res: Response, next: NextFu
       }
     }
 
-    const clientIP: any = req.headers['x-forwarded-for'];
+    // const clientIP: any = req.headers['x-forwarded-for'];
 
-    const parsedClientIP: string = clientIP.split(',')[0];
+    // const parsedClientIP: string = clientIP.split(',')[0];
     const cookieData = {
-      IPaddress: parsedClientIP,
+      IPaddress: req.ip,
       UserAgent: req.headers['user-agent'],
       voted: false
     };
