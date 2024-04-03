@@ -38,7 +38,7 @@ export const getElectionController = async (req: Request, res: Response) => {
 
 export const castVoteController = async (req: Request, res: Response, next: NextFunction) => {
     const keys: String[] = Object.keys(req.body);
-    const values: any = Object.values(req.body);
+    const values: string[] = Object.values(req.body);
     if (keys.length === 0) {
         res.status(400).json({ "message": "Bad Api call" });
     }
@@ -50,15 +50,17 @@ export const castVoteController = async (req: Request, res: Response, next: Next
             res.status(400).json({ "message": "Error casting vote", "error": err });
         })
 
-        const clientIP: any = req.headers['x-forwarded-for'];
-        const parsedClientIP: string = clientIP.split(',')[0];
 
-        await addIpandUserAgent(parsedClientIP, req.headers['user-agent'], req.params.electionUrl).then((data) => {
 
-        }).catch((err) => {
-            res.status(400).json({ "message": "Error adding ip and user agent", "error": err });
-        })
     }
+    const clientIP: any = req.headers['x-forwarded-for'];
+    const parsedClientIP: string = clientIP.split(',')[0];
+
+    await addIpandUserAgent(parsedClientIP, req.headers['user-agent'], req.params.electionUrl).then((data) => {
+
+    }).catch((err) => {
+        res.status(400).json({ "message": "Error adding ip and user agent", "error": err });
+    })
     next();
 };
 
