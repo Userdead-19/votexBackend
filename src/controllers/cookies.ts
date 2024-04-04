@@ -21,15 +21,14 @@ export const createCookieData = async (req: Request, res: Response, next: NextFu
 
     // Extract the first three octets of the IP address
     const parsedClientIP: any = clientIp.split(',')[0];
-    const dhcpClientIP: string = parsedClientIP.split('.').slice(0, 3).join('.');
-
+    
     // Check if the number of votes exceeds the maximum allowed
     if (election.NoOfVotes + 1 > election.MaxVotes) {
       return res.status(400).json({ message: 'Max number of votes reached' });
     }
 
     // Check if the client IP is already in the VotersIpAddress array
-    if (election.VotersIpAddress?.includes(dhcpClientIP)) {
+    if (election.VotersIpAddress?.includes(parsedClientIP)) {
       return res.status(400).json({ message: 'You have already voted' });
     }
 
@@ -48,7 +47,7 @@ export const createCookieData = async (req: Request, res: Response, next: NextFu
 
     // Create cookie data
     const cookieData = {
-      IPaddress: dhcpClientIP,
+      IPaddress: parsedClientIP,
       UserAgent: req.headers['user-agent'],
       voted: false
     };
