@@ -23,6 +23,9 @@ export const createCookieData = async (req: Request, res: Response, next: NextFu
     // Extract the first three octets of the IP address
     const dhcpClientIP: string = parsedClientIP.split('.').slice(0, 3).join('.');
 
+    if (election.NoOfVotes + 1 > election.MaxVotes) {
+      return res.status(400).json({ message: 'Max number of votes reached' });
+    }
     if (election?.VotersIpAddress?.includes(dhcpClientIP)) {
       return res.status(400).json({ message: 'You have already voted' });
     }

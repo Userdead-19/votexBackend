@@ -15,7 +15,7 @@ export interface Election extends Document {
   ElectionName: String;
   ElectionUrl: String;
   CategoryAndCandidates: CategoryAndCandidates[];
-  MaxVotes: Number;
+  MaxVotes: number;
   NoOfVotes: number;
   ElectionStartDate: String;
   ElectionEndDate: String;
