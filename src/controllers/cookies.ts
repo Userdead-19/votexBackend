@@ -10,6 +10,7 @@ export const createCookieData = async (req: Request, res: Response, next: NextFu
   try {
     const electionUrl: string = req.params.electionUrl;
 
+    // Find the election based on the provided URL
     const election: Election | null = await ElectionModel.findOne({ ElectionUrl: electionUrl });
 
     if (!election) {
@@ -18,33 +19,53 @@ export const createCookieData = async (req: Request, res: Response, next: NextFu
 
     const clientIp: any = req.headers['x-forwarded-for'];
 
-    const parsedClientIP: any = clientIp.split(',')[0];
-
     // Extract the first three octets of the IP address
+    const parsedClientIP: any = clientIp.split(',')[0];
     const dhcpClientIP: string = parsedClientIP.split('.').slice(0, 3).join('.');
 
+    // Check if the number of votes exceeds the maximum allowed
     if (election.NoOfVotes + 1 > election.MaxVotes) {
       return res.status(400).json({ message: 'Max number of votes reached' });
     }
-    if (election?.VotersIpAddress?.includes(dhcpClientIP)) {
+
+    // Check if the client IP is already in the VotersIpAddress array
+    if (election.VotersIpAddress?.includes(dhcpClientIP)) {
       return res.status(400).json({ message: 'You have already voted' });
     }
 
+    // Check if the 'VotingSite' cookie exists and if the user has already voted
     if (req.cookies['VotingSite']) {
-      const decoded = jsonwebtoken.verify(req.cookies['VotingSite'], process.env.COOKIE_SECRET);
-      if (decoded.voted) {
-        return res.status(400).json({ message: 'You have already voted' });
+      try {
+        const decoded = jsonwebtoken.verify(req.cookies['VotingSite'], process.env.COOKIE_SECRET);
+        if (decoded.voted) {
+          return res.status(400).json({ message: 'You have already voted' });
+        }
+      } catch (error) {
+        // Handle invalid or expired cookies gracefully
+        console.error('Error decoding cookie:', error);
       }
     }
 
+    // Create cookie data
     const cookieData = {
-      IPaddress: dhcpClientIP,  // Use the DHCP IP address
+      IPaddress: dhcpClientIP,
       UserAgent: req.headers['user-agent'],
       voted: false
     };
+
+    // Hash the cookie data
     const hashedCookieData = await jsonwebtoken.sign(cookieData, process.env.COOKIE_SECRET);
 
-    res.cookie('VotingSite', hashedCookieData, { maxAge: 60 * 60 * 24 * 1000, secure: true, httpOnly: true, sameSite: 'none', path: '/' });
+    // Set the 'VotingSite' cookie
+    res.cookie('VotingSite', hashedCookieData, {
+      maxAge: 60 * 60 * 24 * 1000, // 1 day
+      secure: true,
+      httpOnly: true,
+      sameSite: 'none',
+      path: '/'
+    });
+
+    // Proceed to the next middleware
     next();
   } catch (error) {
     console.error('Error creating cookie data:', error);
