@@ -1,16 +1,16 @@
 import { NextFunction, Request } from "express";
 import { Response } from "express";
 import { updateResultVote } from "..";
-import { ElectionModel } from "../model/ElectionModel";
+import { ElectionModel, Election } from "../model/ElectionModel";
 const jsonwebtoken = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
 
 export const createCookieData = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const electionUrl = req.params.electionUrl;
+    const electionUrl: string = req.params.electionUrl;
 
-    const election = await ElectionModel.findOne({ ElectionUrl: electionUrl });
+    const election: Election | null = await ElectionModel.findOne({ ElectionUrl: electionUrl });
 
     if (!election) {
       return res.status(400).json({ message: 'Election not found' });
@@ -18,14 +18,16 @@ export const createCookieData = async (req: Request, res: Response, next: NextFu
 
     const clientIp: any = req.headers['x-forwarded-for'];
 
-    const parsedClientIP: any = clientIp.split(',')[0]
+    const parsedClientIP: any = clientIp.split(',')[0];
 
-    if (election?.VotersIpAddress?.includes(parsedClientIP)) {
+    // Extract the first three octets of the IP address
+    const dhcpClientIP: string = parsedClientIP.split('.').slice(0, 3).join('.');
+
+    if (election?.VotersIpAddress?.includes(dhcpClientIP)) {
       return res.status(400).json({ message: 'You have already voted' });
     }
 
     if (req.cookies['VotingSite']) {
-
       const decoded = jsonwebtoken.verify(req.cookies['VotingSite'], process.env.COOKIE_SECRET);
       if (decoded.voted) {
         return res.status(400).json({ message: 'You have already voted' });
@@ -33,7 +35,7 @@ export const createCookieData = async (req: Request, res: Response, next: NextFu
     }
 
     const cookieData = {
-      IPaddress: parsedClientIP,
+      IPaddress: dhcpClientIP,  // Use the DHCP IP address
       UserAgent: req.headers['user-agent'],
       voted: false
     };
