@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "engines": {
-    "node": "20.x"
-  },
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon --exec ts-node src/index.ts",
@@ -26,12 +23,14 @@
     "typescript": "^5.4.3"
   },
   "dependencies": {
+    "@types/helmet": "^4.0.0",
     "@types/mongoose": "^5.11.97",
     "@types/socket.io": "^3.0.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.5",
+    "helmet": "^7.1.0",
     "ipaddr.js": "^2.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0"

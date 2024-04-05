@@ -9,6 +9,7 @@ import ElectionRouter from './router/ElectionRouter';
 import http from 'http';
 import { Server, Socket } from 'socket.io';
 import { exportVotings } from './model/ElectionModel';
+import helmet from 'helmet';
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.use(cookieParser());
 
 app.use(bodyParser.json());
 app.use(morgan('dev'));
+app.use(helmet());
 
 
 io.on('connect', (socket: Socket) => {
