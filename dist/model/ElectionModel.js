@@ -73,21 +73,25 @@ exports.getElection = getElection;
 const getAllElections = () => __awaiter(void 0, void 0, void 0, function* () { exports.ElectionModel.find().then((data) => { return data; }).catch((err) => { console.log(err); return false; }); });
 exports.getAllElections = getAllElections;
 const castVote = (electionURL, category, candidate) => __awaiter(void 0, void 0, void 0, function* () {
-    exports.ElectionModel.findOne({ ElectionUrl: electionURL }).then((data) => {
+    try {
+        const data = yield exports.ElectionModel.findOne({ ElectionUrl: electionURL });
         if (data) {
-            const categoryIndex = data.CategoryAndCandidates.findIndex((categoryAndCandidates) => categoryAndCandidates.CategoryName === category);
+            const categoryIndex = data.CategoryAndCandidates.findIndex(categoryAndCandidates => categoryAndCandidates.CategoryName === category);
             if (categoryIndex !== -1) {
-                const candidateIndex = data.CategoryAndCandidates[categoryIndex].Candidates.findIndex((candidateData) => candidateData.CandidateName === candidate);
+                const candidateIndex = data.CategoryAndCandidates[categoryIndex].Candidates.findIndex(candidateData => candidateData.CandidateName === candidate);
                 if (candidateIndex !== -1) {
                     data.CategoryAndCandidates[categoryIndex].Candidates[candidateIndex].CandidateVotes += 1;
-                    data.save().then((data) => { return true; }).catch((err) => { console.log(err); return false; });
+                    yield data.save();
+                    return true;
                 }
             }
         }
-        else {
-            return false;
-        }
-    }).catch((err) => { console.log(err); return false; });
+        return false;
+    }
+    catch (err) {
+        console.error('Error casting vote:', err);
+        return false;
+    }
 });
 exports.castVote = castVote;
 const updateElectionStatus = (electionUrl, status) => __awaiter(void 0, void 0, void 0, function* () {
@@ -105,15 +109,15 @@ exports.updateElectionStatus = updateElectionStatus;
 const addIpandUserAgent = (ip, userAgent, electionUrl) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield exports.ElectionModel.findOne({ ElectionUrl: electionUrl });
-        if (data !== null) {
+        if (data) {
             if (ip !== undefined) {
-                if (data.VotersIpAddress === null || data.VotersIpAddress === undefined) {
+                if (!data.VotersIpAddress) {
                     data.VotersIpAddress = [];
                 }
                 data.VotersIpAddress.push(ip);
             }
             if (userAgent !== undefined) {
-                if (data.VotersUserAgent === null || data.VotersUserAgent === undefined) {
+                if (!data.VotersUserAgent) {
                     data.VotersUserAgent = [];
                 }
                 data.VotersUserAgent.push(userAgent);

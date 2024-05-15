@@ -20,7 +20,7 @@ export const createElectionController = async (req: Request, res: Response) => {
     req.body.ElectionUrl = generateRandomString(6);
 
     createElection(req.body).then((data: any) => {
-        res.status(200).json({ "message": "Election created successfully", ElectionData: data });
+        res.status(200).json({ "message": "Election created successfully" });
     }).catch((err) => {
         res.status(400).json({ "message": "Error creating election", "error": err });
     })

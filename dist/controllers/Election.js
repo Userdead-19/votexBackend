@@ -47,22 +47,32 @@ const getElectionController = (req, res) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.getElectionController = getElectionController;
 const castVoteController = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const keys = Object.keys(req.body);
-    const values = Object.values(req.body);
-    if (keys.length === 0) {
-        res.status(400).json({ "message": "Bad Api call" });
-    }
-    for (let i = 0; i < keys.length; i++) {
-        (0, ElectionModel_1.castVote)(req.params.electionUrl, keys[i].toString(), values[i]).then((data) => {
-        }).catch((err) => {
-            res.status(400).json({ "message": "Error casting vote", "error": err });
-        });
-        (0, ElectionModel_1.addIpandUserAgent)(req.ip, req.headers['user-agent'], req.params.electionUrl).then((data) => {
+    try {
+        const keys = Object.keys(req.body);
+        const values = Object.values(req.body);
+        if (keys.length === 0) {
+            return res.status(400).json({ "message": "Bad API call" });
+        }
+        const categoryAndCandidates = yield (0, ElectionModel_1.exportVotings)(req.params.electionUrl);
+        const no_of_candidates = categoryAndCandidates ? Object.keys(categoryAndCandidates).length : 0;
+        if (keys.length !== no_of_candidates) {
+            return res.status(400).json({ "message": "Bad API call" });
+        }
+        for (let i = 0; i < keys.length; i++) {
+            yield (0, ElectionModel_1.castVote)(req.params.electionUrl, keys[i].toString(), values[i]);
+        }
+        const clientIP = req.headers['x-forwarded-for'];
+        const parsedClientIP = clientIP.split(',')[0];
+        yield (0, ElectionModel_1.addIpandUserAgent)(parsedClientIP, req.headers['user-agent'], req.params.electionUrl).then((data) => {
         }).catch((err) => {
             res.status(400).json({ "message": "Error adding ip and user agent", "error": err });
         });
+        next();
     }
-    next();
+    catch (error) {
+        console.error("Error in castVoteController:", error);
+        res.status(500).json({ "message": "Internal Server Error" });
+    }
 });
 exports.castVoteController = castVoteController;
 const updateElectionStatusController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

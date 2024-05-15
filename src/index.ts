@@ -31,7 +31,7 @@ app.use(cors({
   },
   credentials: true,
   //methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  //allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials', 'Access-Control-Allow-Headers', 'Access-Control-Allow-Methods'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials', 'Access-Control-Allow-Headers', 'Access-Control-Allow-Methods'],
 }));
 
 app.use(cookieParser());

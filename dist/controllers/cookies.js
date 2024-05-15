@@ -19,21 +19,52 @@ const createCookieData = (req, res, next) => __awaiter(void 0, void 0, void 0, f
     var _a;
     try {
         const electionUrl = req.params.electionUrl;
+        // Find the election based on the provided URL
         const election = yield ElectionModel_1.ElectionModel.findOne({ ElectionUrl: electionUrl });
         if (!election) {
             return res.status(400).json({ message: 'Election not found' });
         }
-        const clientIp = req.ip;
-        if ((_a = election === null || election === void 0 ? void 0 : election.VotersIpAddress) === null || _a === void 0 ? void 0 : _a.includes(clientIp)) {
+        const clientIp = req.headers['x-forwarded-for'];
+        // Extract the first three octets of the IP address
+        const parsedClientIP = clientIp.split(',')[0];
+        // Check if the number of votes exceeds the maximum allowed
+        if (election.NoOfVotes + 1 > election.MaxVotes) {
+            return res.status(400).json({ message: 'Max number of votes reached' });
+        }
+        // Check if the client IP is already in the VotersIpAddress array
+        if ((_a = election.VotersIpAddress) === null || _a === void 0 ? void 0 : _a.includes(parsedClientIP)) {
             return res.status(400).json({ message: 'You have already voted' });
         }
+        // Check if the 'VotingSite' cookie exists and if the user has already voted
+        if (req.cookies['VotingSite']) {
+            try {
+                const decoded = jsonwebtoken.verify(req.cookies['VotingSite'], process.env.COOKIE_SECRET);
+                if (decoded.voted) {
+                    return res.status(400).json({ message: 'You have already voted' });
+                }
+            }
+            catch (error) {
+                // Handle invalid or expired cookies gracefully
+                console.error('Error decoding cookie:', error);
+            }
+        }
+        // Create cookie data
         const cookieData = {
-            IPaddress: req.ip,
+            IPaddress: parsedClientIP,
             UserAgent: req.headers['user-agent'],
             voted: false
         };
+        // Hash the cookie data
         const hashedCookieData = yield jsonwebtoken.sign(cookieData, process.env.COOKIE_SECRET);
-        res.cookie('VotingSite', hashedCookieData, { maxAge: 60 * 60 * 24 * 1000, secure: true, httpOnly: true });
+        // Set the 'VotingSite' cookie
+        res.cookie('VotingSite', hashedCookieData, {
+            maxAge: 60 * 60 * 24 * 1000, // 1 day
+            secure: true,
+            httpOnly: true,
+            sameSite: 'none',
+            path: '/'
+        });
+        // Proceed to the next middleware
         next();
     }
     catch (error) {

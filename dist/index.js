@@ -24,17 +24,30 @@ const ElectionRouter_1 = __importDefault(require("./router/ElectionRouter"));
 const http_1 = __importDefault(require("http"));
 const socket_io_1 = require("socket.io");
 const ElectionModel_1 = require("./model/ElectionModel");
+const helmet_1 = __importDefault(require("helmet"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server);
+app.set('trust proxy', 1);
 app.use((0, cors_1.default)({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3001',
-    credentials: true
+    origin: function (origin, callback) {
+        const allowedOrigins = ['http://localhost:3000', process.env.FRONTEND_URL];
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    //methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials', 'Access-Control-Allow-Headers', 'Access-Control-Allow-Methods'],
 }));
 app.use((0, cookie_parser_1.default)());
 app.use(body_parser_1.default.json());
 app.use((0, morgan_1.default)('dev'));
+app.use((0, helmet_1.default)());
 io.on('connect', (socket) => {
     console.log('A user connected');
     socket.on('user', (data) => {
@@ -52,6 +65,9 @@ app.use('/api', ElectionRouter_1.default);
 app.get('/socket', (req, res) => {
     res.json('Hello World');
     io.emit('message', 'hello world');
+});
+app.get("/clientIP", (req, res) => {
+    res.json(`Your IP address is ${req.headers['x-forwarded-for'] || req.socket.remoteAddress}`);
 });
 app.get('/', (req, res) => {
     res.json('Hello World');
